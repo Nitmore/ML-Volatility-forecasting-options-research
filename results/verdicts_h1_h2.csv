@@ -1,0 +1,3 @@
+horizon,best_test_QLIKE,XGB/HAR_X,p(XGB vs HAR_X),XGB/GJR,p(XGB vs GJR),MCS_90 (QLIKE),H1,H2
+5,XGB,0.8937568915080462,0.20814007262216683,0.8595703399000969,0.043228372878818803,"ENS_EQ, ENS_REGIME, ENS_TRAIL, HAR_X, RF, XGB",NOT SUPPORTED: no significant difference between XGB and HAR-X,NOT SUPPORTED: same ordering in every regime (joint p = 0.703)
+20,ENS_EQ,0.9127357985068056,0.5612694945661438,0.9883723043380916,0.9318143162548158,"EGARCH, ENS_EQ, ENS_TRAIL, GJR, HAR_X, RF, XGB",NOT SUPPORTED: no significant difference between XGB and HAR-X,"NOT SUPPORTED: point estimates change sign across regimes, but jointly insignificant (p = 0.195)"

@@ -1,0 +1,11 @@
+# data is reproducible from scripts; never commit vendor files
+data/raw/
+data/processed/
+figures/_synthetic/
+results/_synthetic/
+*.parquet
+.ipynb_checkpoints/
+__pycache__/
+.pytest_cache/
+.env
+.venv/

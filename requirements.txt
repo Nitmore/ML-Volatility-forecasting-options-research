@@ -1,0 +1,20 @@
+# Python 3.10+ recommended (tested on 3.13)
+numpy>=1.26
+pandas>=2.1
+pyarrow>=14
+scipy>=1.11
+statsmodels>=0.14
+matplotlib>=3.8
+pyyaml>=6
+requests>=2.31
+yfinance>=0.2.50
+pandas_market_calendars>=4.4
+# Notebook 3 onwards
+arch>=7.0
+scikit-learn>=1.4
+xgboost>=2.0
+optuna>=3.6
+shap>=0.45
+# dev
+pytest>=8
+jupyterlab>=4

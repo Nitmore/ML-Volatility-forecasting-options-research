@@ -1,0 +1,8 @@
+,verdict
+H1 (h=5),NOT SUPPORTED: no significant difference between XGB and HAR-X
+H1 (h=20),NOT SUPPORTED: no significant difference between XGB and HAR-X
+H2 (h=5),NOT SUPPORTED: same ordering in every regime (joint p = 0.703)
+H2 (h=20),"NOT SUPPORTED: point estimates change sign across regimes, but jointly insignificant (p = 0.195)"
+H3,"SUPPORTED: b_F = 0.40, Holm p = 0.004 (XGB, h=20, test)"
+H4,"NOT SUPPORTED: R2_OOS vs hist. mean = -0.175 [-0.667, 0.430]; vs naive = 0.353 [-0.755, 0.843] (XGB, h=20, test)"
+H5,"PREMIUM ONLY: positive Sharpe after costs, but no evidence the forecast improves on always-short: test Sharpe 1.92, PSR 1.00, DSR 0.87; beats always-short (0.93; DM p = 0.80). Proxy, not executable."

@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------------------
+# Single source of truth for every notebook. Change values here, never inline.
+# ---------------------------------------------------------------------------
+project:
+  name: ML Volatility Forecasting & Options Research
+  seed: 42
+
+data:
+  ticker: SPY
+  # Download starts before the research sample so 60-day features are fully
+  # warmed up on 2015-01-02, and ends after it so the last 20-day targets in
+  # Dec 2025 are defined (they need Jan 2026 returns).
+  download_start: "2014-06-01"
+  download_end: "2026-02-15"
+  sample_start: "2015-01-01"
+  sample_end: "2025-12-31"
+  # Ordered fallbacks: the first source that succeeds is used and logged in
+  # data/raw/manifest.json. A CSV at data/raw/manual/<name>.csv overrides all.
+  series:
+    vix:                 # 30-calendar-day SPX implied vol, close 16:15 ET
+      required: true
+      sources:
+        - {type: cboe, url: "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"}
+        - {type: fred, id: VIXCLS}
+        - {type: yahoo, symbol: "^VIX"}
+    vix9d:               # 9-day implied vol, matched to the 5-day horizon
+      required: false
+      sources:
+        - {type: cboe, url: "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX9D_History.csv"}
+        - {type: yahoo, symbol: "^VIX9D"}
+    vix3m:               # 3-month implied vol (term-structure feature)
+      required: false
+      sources:
+        - {type: cboe, url: "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX3M_History.csv"}
+        - {type: fred, id: VXVCLS}
+        - {type: yahoo, symbol: "^VIX3M"}
+    rate_3m:             # 3-month T-bill, percent p.a.
+      required: true
+      sources:
+        - {type: fred, id: DGS3MO}
+        - {type: yahoo, symbol: "^IRX"}   # 13-week bill discount rate; close proxy, noted in manifest
+  # Alignment tolerances (in trading days) for forward-filling secondary series
+  ffill_limit:
+    vix: 1
+    rate: 5
+
+targets:
+  horizons: [5, 20]          # trading days
+  annualization: 252
+  # Implied-vol series matched to each horizon (used in Notebook 5)
+  iv_match:
+    5: vix9d
+    20: vix
+
+splits:
+  # Expanding-window tuning folds: train = sample_start .. year-1, validate = year
+  val_years: [2019, 2020, 2021, 2022]
+  test_start: "2023-01-01"   # SEALED until frozen_config.yaml is committed
+  test_end: "2025-12-31"
+
+regimes:
+  quantiles: [0.33, 0.67]    # computed on each TRAINING fold only
+
+models:
+  test_years: [2023, 2024, 2025]   # annual refits inside the sealed test window
+  ewma_lambda: 0.94                # RiskMetrics
+  egarch_simulations: 500          # EGARCH multi-step forecasts are simulated
+  optuna_trials: 30                # per ML model per horizon (every trial is logged)
+  calib_rows: 252                  # held-out block for the log-to-level correction
+  primary_feature_set: E4_all
+  quantiles: [0.1, 0.5, 0.9]
+
+strategy:
+  # Fixed BEFORE any strategy result is seen. Selection uses validation years only.
+  horizon: 20                      # VIX (30 calendar days) is matched to the 20-day target
+  base_cost_vol: 0.005             # 0.5 vol point per trade (variance-swap proxy bid/ask)
+  cost_grid_vol: [0.0, 0.0025, 0.005, 0.01, 0.02]
+  grid:
+    models: [HAR_X, XGB, ENS_EQ, GJR]
+    short_above: [0.0, 0.1, 0.2, 0.3]      # short variance when log(IV^2/F) exceeds this
+    long_below: [null, -0.2, -0.4]         # long variance when log(IV^2/F) is below this (null = never)
+  width_window: 252                # trailing window for uncertainty-aware sizing
+  options:                         # used only if a historical SPY chain is supplied
+    chain_path: data/raw/options/spy_chain.parquet
+    dte_range: [30, 45]
+    dte_target: 37
+    hold_days: 20
+    min_dte_exit: 5
+    hedge_cost_bps: 0.5
+    div_yield: 0.013
+
+validation:
+  extreme_return_mad_z: 10   # flag |r| beyond this many robust sigmas (info only)
+  vix_bounds: [5, 150]
+  max_stale_run: 2           # consecutive identical closes before warning
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  figures: figures
+  results: results
